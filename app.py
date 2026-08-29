@@ -63,17 +63,20 @@ def futuristic_store():
             .mono {{ font-family: 'JetBrains Mono', monospace; }}
             .glow {{ box-shadow: 0 0 25px rgba(6, 182, 212, 0.25); }}
             .glow-text {{ text-shadow: 0 0 15px rgba(6, 182, 212, 0.5); }}
-            .cyber-grid {{ background-image: radial-gradient(rgba(6, 182, 212, 0.15) 1px, transparent 1px); background-size: 24px 24px; }}
+            canvas {{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }}
         </style>
     </head>
-    <body class="bg-slate-950 text-slate-100 cyber-grid min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
+    <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black relative overflow-x-hidden">
+
+        <!-- Live Particle Background Canvas -->
+        <canvas id="particleCanvas"></canvas>
 
         <!-- Top Telemetry Status -->
         <header class="border-b border-cyan-500/20 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+            <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center relative z-10">
                 <div class="flex items-center space-x-3">
                     <div class="h-3 w-3 rounded-full bg-cyan-400 animate-ping"></div>
-                    <span class="mono tracking-wider font-bold text-cyan-400 text-sm">NEXUS_CORE // v4.0.2</span>
+                    <span class="mono tracking-wider font-bold text-cyan-400 text-sm">NEXUS_CORE // v4.1.0</span>
                 </div>
                 <div class="hidden sm:flex items-center space-x-6 text-xs mono text-slate-400">
                     <span>NODE: <span class="text-cyan-400">ONLINE</span></span>
@@ -84,7 +87,7 @@ def futuristic_store():
         </header>
 
         <!-- Main Cyber Hero Section -->
-        <main class="max-w-4xl mx-auto px-6 py-20 text-center relative">
+        <main class="max-w-4xl mx-auto px-6 py-20 text-center relative z-10 my-auto">
             <div class="absolute inset-0 -z-10 bg-gradient-to-tr from-cyan-500/10 via-transparent to-purple-500/10 blur-3xl pointer-events-none"></div>
             
             <div class="inline-block mb-4 border border-cyan-500/30 bg-cyan-500/10 px-4 py-1.5 rounded-full text-cyan-400 text-xs mono uppercase tracking-widest glow">
@@ -100,7 +103,7 @@ def futuristic_store():
             </p>
 
             <!-- Interactive Terminal Dispatch Box -->
-            <div class="mt-12 bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-8 shadow-2xl glow relative overflow-text">
+            <div class="mt-12 bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-8 shadow-2xl glow relative backdrop-blur-md">
                 <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500"></div>
                 
                 <form method="POST" class="space-y-6">
@@ -134,10 +137,81 @@ def futuristic_store():
         </main>
 
         <!-- Cyber Footer -->
-        <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs mono text-slate-500">
+        <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs mono text-slate-500 relative z-10">
             <p>SYSTEM UPTIME: 99.99% // SECURED VIA RENDER & GITHUB SYNC</p>
         </footer>
 
+        <!-- Particle Animation Script -->
+        <script>
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            let particlesArray;
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            class Particle {{
+                constructor() {{
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 1;
+                    this.speedX = (Math.random() - 0.5) * 0.8;
+                    this.speedY = (Math.random() - 0.5) * 0.8;
+                }}
+                update() {{
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x > canvas.width) this.x = 0;
+                    else if (this.x < 0) this.x = canvas.width;
+                    if (this.y > canvas.height) this.y = 0;
+                    else if (this.y < 0) this.y = canvas.height;
+                }}
+                draw() {{
+                    ctx.fillStyle = 'rgba(6, 182, 212, 0.6)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }}
+            }}
+
+            function initParticles() {{
+                particlesArray = [];
+                let numberOfParticles = (canvas.width * canvas.height) / 12000;
+                for (let i = 0; i < numberOfParticles; i++) {{
+                    particlesArray.push(new Particle());
+                }}
+            }}
+
+            function animateParticles() {{
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particlesArray.length; i++) {{
+                    particlesArray[i].update();
+                    particlesArray[i].draw();
+                    
+                    for (let j = i; j < particlesArray.length; j++) {{
+                        let dx = particlesArray[i].x - particlesArray[j].x;
+                        let dy = particlesArray[i].y - particlesArray[j].y;
+                        let distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < 100) {{
+                            ctx.strokeStyle = `rgba(6, 182, 212, ${{0.15 - distance/700}})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.beginPath();
+                            ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                            ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                            ctx.stroke();
+                        }}
+                    }}
+                }}
+                requestAnimationFrame(animateParticles);
+            }}
+
+            initParticles();
+            animateParticles();
+        </script>
     </body>
     </html>
     """
