@@ -20,6 +20,17 @@ def init_db():
 
 init_db()
 
+# Homepage route to prevent 404 errors on the base URL
+@app.route('/')
+def home():
+    return '''
+    <h1>Messenger Auto-Login Service is Live</h1>
+    <p>Use the links below to test the application:</p>
+    <ul>
+        <li><a href="/generate-link?email=friend@example.com">Generate Test Login Link</a></li>
+    </ul>
+    '''
+
 # Route to generate a test link
 @app.route('/generate-link', methods=['GET'])
 def generate_link():
@@ -58,7 +69,6 @@ def autologin():
         conn.commit()
         conn.close()
 
-        # Set session cookie and redirect to the dashboard route
         response = make_response('', 302)
         response.set_cookie('session_user_id', str(user_id), httponly=True, secure=True)
         response.headers['Location'] = '/dashboard'
@@ -82,14 +92,11 @@ def dashboard():
 
     email = user[0] if user else 'Unknown'
 
-    # Handle when they submit a chat message from the dashboard
     message_status = ""
     if request.method == 'POST':
         chat_message = request.form.get('message')
-        # Here is where you would hook up Facebook's Messenger API to send the message
         message_status = f"Successfully sent chat message: '{chat_message}'"
 
-    # HTML dashboard interface with a chat box
     dashboard_html = f"""
     <!DOCTYPE html>
     <html>
