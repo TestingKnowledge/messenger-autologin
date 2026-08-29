@@ -1,5 +1,7 @@
+import os
 import secrets
 import sqlite3
+import requests
 from flask import Flask, request, make_response, render_template_string
 
 app = Flask(__name__)
@@ -11,16 +13,30 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE,
-            auth_token TEXT
+            auth_token TEXT,
+            psid TEXT
         )
     ''')
-    cursor.execute("INSERT OR IGNORE INTO users (email) VALUES ('friend@example.com')")
+    # Insert a test user with a dummy Facebook Page-Scoped ID (PSID) for testing
+    cursor.execute("INSERT OR IGNORE INTO users (email, psid) VALUES ('friend@example.com', '1234567890123456')")
     conn.commit()
     conn.close()
 
 init_db()
 
-# Homepage route to prevent 404 errors on the base URL
+def send_messenger_message(recipient_psid, message_text):
+    page_access_token = os.environ.get("PAGE_ACCESS_TOKEN")
+    if not page_access_token:
+        return {"error": {"message": "PAGE_ACCESS_TOKEN environment variable is missing."}}
+    
+    url = f"https://graph.facebook.com/v19.0/me/messages?access_token={page_access_token}"
+    payload = {
+        "recipient": {"id": recipient_psid},
+        "message": {"text": message_text}
+    }
+    response = requests.post(url, json=payload)
+    return response.json()
+
 @app.route('/')
 def home():
     return '''
@@ -31,7 +47,6 @@ def home():
     </ul>
     '''
 
-# Route to generate a test link
 @app.route('/generate-link', methods=['GET'])
 def generate_link():
     email = request.args.get('email', 'friend@example.com')
@@ -46,7 +61,6 @@ def generate_link():
     link = f"https://messenger-autologin.onrender.com/autologin?token={token}"
     return f'<h1>Link for {email}:</h1><p><a href="{link}">{link}</a></p>'
 
-# Auto-login route that sets cookie and directs to the dashboard
 @app.route('/autologin', methods=['GET'])
 def autologin():
     incoming_token = request.args.get('token')
@@ -77,7 +91,6 @@ def autologin():
     conn.close()
     return 'Invalid or expired login link.', 401
 
-# The Dashboard where the logged-in user can control chats or send messages
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     user_id = request.cookies.get('session_user_id')
@@ -86,16 +99,27 @@ def dashboard():
 
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT email FROM users WHERE id = ?", (user_id,))
+    cursor.execute("SELECT email, psid FROM users WHERE id = ?", (user_id,))
     user = cursor.fetchone()
     conn.close()
 
-    email = user[0] if user else 'Unknown'
+    if not user:
+        return 'User not found.', 404
 
+    email, psid = user
     message_status = ""
+    
     if request.method == 'POST':
         chat_message = request.form.get('message')
-        message_status = f"Successfully sent chat message: '{chat_message}'"
+        if psid:
+            api_response = send_messenger_message(psid, chat_message)
+            if "message_id" in api_response:
+                message_status = "Message successfully dispatched to Messenger!"
+            else:
+                err_msg = api_response.get('error', {}).get('message', 'Unknown error')
+                message_status = f"API Error: {err_msg}"
+        else:
+            message_status = "Error: No Messenger PSID linked to this account."
 
     dashboard_html = f"""
     <!DOCTYPE html>
