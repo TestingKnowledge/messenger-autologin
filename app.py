@@ -42,25 +42,25 @@ def adidas_showcase():
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <script>
-            tailwind.config = {{
+            tailwind.config = {
                 darkMode: 'class',
-                theme: {{
-                    extend: {{
-                        colors: {{
-                            adidas: {{ 500: '#111111', 600: '#00ffcc', 950: '#050505' }}
-                        }}
-                    }}
-                }}
-            }}
+                theme: {
+                    extend: {
+                        colors: {
+                            adidas: { 500: '#111111', 600: '#00ffcc', 950: '#050505' }
+                        }
+                    }
+                }
+            }
         </script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
-            body {{ font-family: 'Space Grotesk', sans-serif; }}
-            .mono {{ font-family: 'JetBrains Mono', monospace; }}
-            .glow {{ box-shadow: 0 0 40px rgba(0, 255, 204, 0.25); }}
-            .glow-text {{ text-shadow: 0 0 20px rgba(0, 255, 204, 0.6); }}
-            #webgl-container {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; }}
-            .glass {{ background: rgba(10, 10, 10, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(0, 255, 204, 0.2); }}
+            body { font-family: 'Space Grotesk', sans-serif; }
+            .mono { font-family: 'JetBrains Mono', monospace; }
+            .glow { box-shadow: 0 0 40px rgba(0, 255, 204, 0.25); }
+            .glow-text { text-shadow: 0 0 20px rgba(0, 255, 204, 0.6); }
+            #webgl-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; }
+            .glass { background: rgba(10, 10, 10, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(0, 255, 204, 0.2); }
         </style>
     </head>
     <body class="bg-black text-white min-h-screen flex flex-col justify-between selection:bg-[#00ffcc] selection:text-black relative overflow-x-hidden">
@@ -131,7 +131,7 @@ def adidas_showcase():
             const container = document.getElementById('webgl-container');
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({{ alpha: true, antialias: true }});
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -139,49 +139,49 @@ def adidas_showcase():
 
             // Dynamic Active 3D Geometry Object
             let currentMesh;
-            const material = new THREE.MeshBasicMaterial({{
+            const material = new THREE.MeshBasicMaterial({
                 color: 0x00ffcc,
                 wireframe: true,
                 transparent: true,
                 opacity: 0.25
-            }});
+            });
 
-            function createGeometry(type) {{
+            function createGeometry(type) {
                 if (currentMesh) scene.remove(currentMesh);
                 let geom;
-                if (type === 'box') {{
+                if (type === 'box') {
                     geom = new THREE.BoxGeometry(12, 12, 12, 6, 6, 6);
-                }} else if (type === 'sphere') {{
+                } else if (type === 'sphere') {
                     geom = new THREE.IcosahedronGeometry(10, 2);
-                }} else {{
+                } else {
                     geom = new THREE.TorusKnotGeometry(9, 3, 100, 16);
-                }}
+                }
                 currentMesh = new THREE.Mesh(geom, material);
                 scene.add(currentMesh);
-            }}
+            }
 
             createGeometry('torus');
 
-            function changeModel(type) {{
+            function changeModel(type) {
                 createGeometry(type);
-            }}
+            }
 
             // Floating Particle Field
             const particlesGeometry = new THREE.BufferGeometry();
             const particlesCount = 800;
             const posArray = new Float32Array(particlesCount * 3);
 
-            for(let i = 0; i < particlesCount * 3; i++) {{
+            for(let i = 0; i < particlesCount * 3; i++) {
                 posArray[i] = (Math.random() - 0.5) * 70;
-            }}
+            }
 
             particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            const particlesMaterial = new THREE.PointsMaterial({{
+            const particlesMaterial = new THREE.PointsMaterial({
                 size: 0.12,
                 color: 0x00ffcc,
                 transparent: true,
                 opacity: 0.6
-            }});
+            });
             const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
             scene.add(particlesMesh);
 
@@ -193,37 +193,37 @@ def adidas_showcase():
             let targetX = 0;
             let targetY = 0;
 
-            document.addEventListener('mousemove', (event) => {{
+            document.addEventListener('mousemove', (event) => {
                 mouseX = (event.clientX - window.innerWidth / 2) * 0.001;
                 mouseY = (event.clientY - window.innerHeight / 2) * 0.001;
-            }});
+            });
 
             // Animation Loop
             const clock = new THREE.Clock();
 
-            function animate() {{
+            function animate() {
                 requestAnimationFrame(animate);
 
                 targetX = mouseX * 3;
                 targetY = mouseY * 3;
 
-                if (currentMesh) {{
+                if (currentMesh) {
                     currentMesh.rotation.x += 0.004 + (targetY - currentMesh.rotation.x) * 0.05;
                     currentMesh.rotation.y += 0.006 + (targetX - currentMesh.rotation.y) * 0.05;
-                }}
+                }
 
                 particlesMesh.rotation.y = clock.getElapsedTime() * 0.02;
 
                 renderer.render(scene, camera);
-            }}
+            }
 
             animate();
 
-            window.addEventListener('resize', () => {{
+            window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
-            }});
+            });
         </script>
     </body>
     </html>
