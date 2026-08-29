@@ -1,45 +1,17 @@
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-PRODUCTS = [
-    {
-        "id": "predator-edge",
-        "name": "PREDATOR EDGE.1 3D",
-        "category": "Quantum Cleat Matrix",
-        "price": "$280",
-        "desc": "Engineered with biometric grip zones and a responsive holographic chassis for ultimate pitch mastery.",
-        "geometry": "box"
-    },
-    {
-        "id": "ultraboost-x",
-        "name": "ULTRABOOST X-SPACE",
-        "category": "Kinetic Runner",
-        "price": "$220",
-        "desc": "Zero-gravity fluid cushioning cells combined with a reactive neural-mesh knit upper.",
-        "geometry": "sphere"
-    },
-    {
-        "id": "nmd-quantum",
-        "name": "NMD_R1 QUANTUM GRID",
-        "category": "Urban Cyberwear",
-        "price": "$170",
-        "desc": "Futuristic lifestyle silhouette featuring floating plug mechanics and adaptive LED fiber-weaves.",
-        "geometry": "torus"
-    }
-]
-
 @app.route('/')
-def adidas_showcase():
+def flappy_game():
     html_content = """
     <!DOCTYPE html>
     <html lang="en" class="dark">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ADIDAS // QUANTUM MATRIX SHOWCASE</title>
+        <title>CYBER_FLAP // Quantum Node Runner</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <script>
             tailwind.config = {
@@ -47,188 +19,218 @@ def adidas_showcase():
                 theme: {
                     extend: {
                         colors: {
-                            adidas: { 500: '#111111', 600: '#00ffcc', 950: '#050505' }
+                            cyber: { 500: '#06b6d4', 600: '#0891b2', 950: '#030712' }
                         }
                     }
                 }
             }
         </script>
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap');
             body { font-family: 'Space Grotesk', sans-serif; }
             .mono { font-family: 'JetBrains Mono', monospace; }
-            .glow { box-shadow: 0 0 40px rgba(0, 255, 204, 0.25); }
-            .glow-text { text-shadow: 0 0 20px rgba(0, 255, 204, 0.6); }
-            #webgl-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; }
-            .glass { background: rgba(10, 10, 10, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(0, 255, 204, 0.2); }
+            .glow { box-shadow: 0 0 30px rgba(6, 182, 212, 0.3); }
+            .glow-text { text-shadow: 0 0 15px rgba(6, 182, 212, 0.6); }
         </style>
     </head>
-    <body class="bg-black text-white min-h-screen flex flex-col justify-between selection:bg-[#00ffcc] selection:text-black relative overflow-x-hidden">
+    <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-between selection:bg-cyan-500 selection:text-black overflow-hidden">
 
-        <!-- 3D WebGL Live Particle & Shape Grid -->
-        <div id="webgl-container"></div>
-
-        <!-- Telemetry Header -->
-        <header class="border-b border-[#00ffcc]/20 bg-black/60 backdrop-blur-xl sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center relative z-10">
-                <div class="flex items-center space-x-4">
-                    <div class="text-2xl font-black tracking-tighter text-white flex items-center gap-1">
-                        ADIDAS <span class="text-[#00ffcc] text-xs mono px-2 py-0.5 border border-[#00ffcc]/40 rounded">3D.X</span>
-                    </div>
-                </div>
-                <div class="hidden md:flex items-center space-x-8 text-xs mono text-slate-400">
-                    <span>MODE: <span class="text-[#00ffcc]">INTERACTIVE SPATIAL</span></span>
-                    <span>ENGINE: <span class="text-emerald-400">THREE.JS r128</span></span>
-                    <span>SYNC: <span class="text-[#00ffcc]">OPTIMIZED</span></span>
-                </div>
-            </div>
+        <header class="w-full border-b border-cyan-500/20 bg-slate-950/80 backdrop-blur-md py-4 text-center">
+            <h1 class="text-xl font-bold mono text-cyan-400 tracking-wider glow-text">CYBER_FLAP // v1.0.0</h1>
         </header>
 
-        <!-- Main Hero Section -->
-        <main class="max-w-7xl mx-auto px-6 py-16 relative z-10 my-auto w-full">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <div class="inline-block mb-4 border border-[#00ffcc]/40 bg-[#00ffcc]/10 px-4 py-1.5 rounded-full text-[#00ffcc] text-xs mono uppercase tracking-widest glow">
-                    Next-Gen Spatial Catalog
-                </div>
-                <h1 class="text-5xl md:text-8xl font-black tracking-tight mt-2 uppercase">
-                    Future <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffcc] via-teal-300 to-cyan-500 glow-text">Footwear</span>
-                </h1>
-                <p class="text-slate-400 text-base md:text-lg mt-6 max-w-xl mx-auto font-light">
-                    Interact with multidimensional product geometries in real-time. Rotate, inspect, and experience footwear engineered for the metaverse.
-                </p>
-            </div>
-
-            <!-- Interactive Product Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-                {% for p in products %}
-                <div class="glass rounded-3xl p-8 flex flex-col justify-between transition-all duration-500 hover:border-[#00ffcc] hover:scale-105 hover:glow group cursor-pointer" onclick="changeModel('{{ p.geometry }}')">
-                    <div>
-                        <div class="flex justify-between items-start mb-6">
-                            <span class="text-xs mono text-[#00ffcc] uppercase tracking-widest">{{ p.category }}</span>
-                            <span class="text-lg font-bold mono text-white">{{ p.price }}</span>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3 group-hover:text-[#00ffcc] transition-colors">{{ p.name }}</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed mb-6">{{ p.desc }}</p>
-                    </div>
-                    <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
-                        <span class="text-xs mono text-slate-500 group-hover:text-[#00ffcc] transition-colors">CLICK TO MORPH 3D NODE</span>
-                        <div class="h-8 w-8 rounded-full bg-[#00ffcc]/10 border border-[#00ffcc]/30 flex items-center justify-center text-[#00ffcc] group-hover:bg-[#00ffcc] group-hover:text-black transition-all">
-                            <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </div>
+        <main class="flex flex-col items-center justify-center my-auto relative">
+            <div class="relative bg-slate-900 border border-cyan-500/30 rounded-2xl p-4 shadow-2xl glow backdrop-blur-md">
+                <canvas id="gameCanvas" width="400" height="600" class="rounded-xl bg-slate-950 border border-slate-800 block cursor-pointer"></canvas>
+                <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm rounded-xl transition-opacity">
+                    <div class="text-center p-6">
+                        <h2 class="text-3xl font-black text-white mb-2 uppercase tracking-wide">Cyber <span class="text-cyan-400">Flight</span></h2>
+                        <p class="text-xs mono text-slate-400 mb-6">Press SPACE or CLICK to navigate the quantum grid.</p>
+                        <button onclick="startGame()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-8 py-3 rounded-xl text-sm transition tracking-wide uppercase mono shadow-lg shadow-cyan-500/20">
+                            Initialize Flight
+                        </button>
                     </div>
                 </div>
-                {% endfor %}
             </div>
         </main>
 
-        <!-- Footer -->
-        <footer class="border-t border-slate-900 bg-black/80 py-8 text-center text-xs mono text-slate-500 relative z-10 backdrop-blur-md">
-            <p>ADIDAS GLOBAL INNOVATION LAB // QUANTUM DIVISION</p>
+        <footer class="w-full border-t border-slate-900 bg-slate-950 py-4 text-center text-xs mono text-slate-500">
+            <p>CONTROL: CLICK / SPACEBAR TO JUMP</p>
         </footer>
 
-        <!-- Three.js Interactive 3D Script -->
         <script>
-            const container = document.getElementById('webgl-container');
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            container.appendChild(renderer.domElement);
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const overlay = document.getElementById('overlay');
 
-            // Dynamic Active 3D Geometry Object
-            let currentMesh;
-            const material = new THREE.MeshBasicMaterial({
-                color: 0x00ffcc,
-                wireframe: true,
-                transparent: true,
-                opacity: 0.25
+            let gameStarted = false;
+            let gameOver = false;
+            let score = 0;
+            let highscore = 0;
+
+            let bird = {
+                x: 80,
+                y: 300,
+                radius: 12,
+                gravity: 0.45,
+                lift: -8,
+                velocity: 0
+            };
+
+            let pipes = [];
+            let pipeWidth = 60;
+            let pipeGap = 160;
+            let pipeSpeed = 3;
+            let frameCount = 0;
+
+            function resetGame() {
+                bird.y = 300;
+                bird.velocity = 0;
+                pipes = [];
+                score = 0;
+                frameCount = 0;
+                gameOver = false;
+                overlay.style.display = 'none';
+                loop();
+            }
+
+            function startGame() {
+                gameStarted = true;
+                resetGame();
+            }
+
+            function jump() {
+                if (!gameStarted || gameOver) return;
+                bird.velocity = bird.lift;
+            }
+
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (!gameStarted || gameOver) {
+                        startGame();
+                    } else {
+                        jump();
+                    }
+                }
             });
 
-            function createGeometry(type) {
-                if (currentMesh) scene.remove(currentMesh);
-                let geom;
-                if (type === 'box') {
-                    geom = new THREE.BoxGeometry(12, 12, 12, 6, 6, 6);
-                } else if (type === 'sphere') {
-                    geom = new THREE.IcosahedronGeometry(10, 2);
+            canvas.addEventListener('click', () => {
+                if (!gameStarted || gameOver) {
+                    startGame();
                 } else {
-                    geom = new THREE.TorusKnotGeometry(9, 3, 100, 16);
+                    jump();
                 }
-                currentMesh = new THREE.Mesh(geom, material);
-                scene.add(currentMesh);
-            }
-
-            createGeometry('torus');
-
-            function changeModel(type) {
-                createGeometry(type);
-            }
-
-            // Floating Particle Field
-            const particlesGeometry = new THREE.BufferGeometry();
-            const particlesCount = 800;
-            const posArray = new Float32Array(particlesCount * 3);
-
-            for(let i = 0; i < particlesCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 70;
-            }
-
-            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            const particlesMaterial = new THREE.PointsMaterial({
-                size: 0.12,
-                color: 0x00ffcc,
-                transparent: true,
-                opacity: 0.6
-            });
-            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-            scene.add(particlesMesh);
-
-            camera.position.z = 30;
-
-            // Mouse Interaction
-            let mouseX = 0;
-            let mouseY = 0;
-            let targetX = 0;
-            let targetY = 0;
-
-            document.addEventListener('mousemove', (event) => {
-                mouseX = (event.clientX - window.innerWidth / 2) * 0.001;
-                mouseY = (event.clientY - window.innerHeight / 2) * 0.001;
             });
 
-            // Animation Loop
-            const clock = new THREE.Clock();
+            function spawnPipe() {
+                let minHeight = 50;
+                let maxHeight = canvas.height - pipeGap - 50;
+                let height = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+                pipes.push({
+                    x: canvas.width,
+                    top: height,
+                    bottom: canvas.height - height - pipeGap,
+                    passed: false
+                });
+            }
 
-            function animate() {
-                requestAnimationFrame(animate);
+            function update() {
+                if (gameOver) return;
 
-                targetX = mouseX * 3;
-                targetY = mouseY * 3;
+                bird.velocity += bird.gravity;
+                bird.y += bird.velocity;
 
-                if (currentMesh) {
-                    currentMesh.rotation.x += 0.004 + (targetY - currentMesh.rotation.x) * 0.05;
-                    currentMesh.rotation.y += 0.006 + (targetX - currentMesh.rotation.y) * 0.05;
+                if (bird.y + bird.radius >= canvas.height || bird.y - bird.radius <= 0) {
+                    endGame();
                 }
 
-                particlesMesh.rotation.y = clock.getElapsedTime() * 0.02;
+                if (frameCount % 100 === 0) {
+                    spawnPipe();
+                }
 
-                renderer.render(scene, camera);
+                for (let i = pipes.length - 1; i >= 0; i--) {
+                    pipes[i].x -= pipeSpeed;
+
+                    if (
+                        bird.x + bird.radius > pipes[i].x &&
+                        bird.x - bird.radius < pipes[i].x + pipeWidth &&
+                        (bird.y - bird.radius < pipes[i].top || bird.y + bird.radius > canvas.height - pipes[i].bottom)
+                    ) {
+                        endGame();
+                    }
+
+                    if (!pipes[i].passed && pipes[i].x + pipeWidth < bird.x) {
+                        score++;
+                        pipes[i].passed = true;
+                    }
+
+                    if (pipes[i].x + pipeWidth < 0) {
+                        pipes.splice(i, 1);
+                    }
+                }
+
+                frameCount++;
             }
 
-            animate();
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
+                ctx.strokeStyle = 'rgba(6, 182, 212, 0.05)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < canvas.width; i += 30) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+
+                pipes.forEach(pipe => {
+                    ctx.fillStyle = '#06b6d4';
+                    ctx.shadowColor = '#06b6d4';
+                    ctx.shadowBlur = 10;
+                    ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top);
+                    ctx.fillRect(pipe.x, canvas.height - pipe.bottom, pipeWidth, pipe.bottom);
+                    ctx.shadowBlur = 0;
+                });
+
+                ctx.fillStyle = '#22d3ee';
+                ctx.shadowColor = '#22d3ee';
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 24px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(score, canvas.width / 2, 50);
+            }
+
+            function endGame() {
+                gameOver = true;
+                if (score > highscore) highscore = score;
+                overlay.style.display = 'flex';
+                overlay.querySelector('h2').textContent = 'System Crash';
+                overlay.querySelector('p').innerHTML = `Score: <span class="text-cyan-400 font-bold">${score}</span> | High Score: <span class="text-emerald-400 font-bold">${highscore}</span>`;
+                overlay.querySelector('button').textContent = 'Reboot Node';
+            }
+
+            function loop() {
+                if (!gameOver) {
+                    update();
+                    draw();
+                    requestAnimationFrame(loop);
+                }
+            }
+
+            draw();
         </script>
     </body>
     </html>
     """
-    return render_template_string(html_content, products=PRODUCTS)
+    return render_template_string(html_content)
 
 if __name__ == '__main__':
     app.run()
