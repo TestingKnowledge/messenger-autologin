@@ -1,147 +1,62 @@
-import os
-import secrets
-import sqlite3
-import requests
-from flask import Flask, request, make_response, render_template_string
+from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-def init_db():
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE,
-            auth_token TEXT,
-            psid TEXT
-        )
-    ''')
-    # Insert a test user with a dummy Facebook Page-Scoped ID (PSID) for testing
-    cursor.execute("INSERT OR IGNORE INTO users (email, psid) VALUES ('friend@example.com', '1234567890123456')")
-    conn.commit()
-    conn.close()
-
-init_db()
-
-def send_messenger_message(recipient_psid, message_text):
-    page_access_token = os.environ.get("PAGE_ACCESS_TOKEN")
-    if not page_access_token:
-        return {"error": {"message": "PAGE_ACCESS_TOKEN environment variable is missing."}}
-    
-    url = f"https://graph.facebook.com/v19.0/me/messages?access_token={page_access_token}"
-    payload = {
-        "recipient": {"id": recipient_psid},
-        "message": {"text": message_text}
-    }
-    response = requests.post(url, json=payload)
-    return response.json()
-
 @app.route('/')
 def home():
-    return '''
-    <h1>Messenger Auto-Login Service is Live</h1>
-    <p>Use the links below to test the application:</p>
-    <ul>
-        <li><a href="/generate-link?email=friend@example.com">Generate Test Login Link</a></li>
-    </ul>
-    '''
-
-@app.route('/generate-link', methods=['GET'])
-def generate_link():
-    email = request.args.get('email', 'friend@example.com')
-    token = secrets.token_urlsafe(16)
-
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute("UPDATE users SET auth_token = ? WHERE email = ?", (token, email))
-    conn.commit()
-    conn.close()
-
-    link = f"https://messenger-autologin.onrender.com/autologin?token={token}"
-    return f'<h1>Link for {email}:</h1><p><a href="{link}">{link}</a></p>'
-
-@app.route('/autologin', methods=['GET'])
-def autologin():
-    incoming_token = request.args.get('token')
-    user_agent = request.headers.get('User-Agent', '')
-
-    if 'facebookexternalhit' in user_agent or 'Facebot' in user_agent:
-        return '<html><head><title>Dashboard Login</title></head><body>Loading...</body></html>'
-
-    if not incoming_token:
-        return 'Missing token.', 400
-
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, email FROM users WHERE auth_token = ?", (incoming_token,))
-    user = cursor.fetchone()
-
-    if user:
-        user_id, email = user
-        cursor.execute("UPDATE users SET auth_token = NULL WHERE id = ?", (user_id,))
-        conn.commit()
-        conn.close()
-
-        response = make_response('', 302)
-        response.set_cookie('session_user_id', str(user_id), httponly=True, secure=True)
-        response.headers['Location'] = '/dashboard'
-        return response
-
-    conn.close()
-    return 'Invalid or expired login link.', 401
-
-@app.route('/dashboard', methods=['GET', 'POST'])
-def dashboard():
-    user_id = request.cookies.get('session_user_id')
-    if not user_id:
-        return 'Unauthorized. Please use your login link first.', 401
-
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT email, psid FROM users WHERE id = ?", (user_id,))
-    user = cursor.fetchone()
-    conn.close()
-
-    if not user:
-        return 'User not found.', 404
-
-    email, psid = user
-    message_status = ""
-    
-    if request.method == 'POST':
-        chat_message = request.form.get('message')
-        if psid:
-            api_response = send_messenger_message(psid, chat_message)
-            if "message_id" in api_response:
-                message_status = "Message successfully dispatched to Messenger!"
-            else:
-                err_msg = api_response.get('error', {}).get('message', 'Unknown error')
-                message_status = f"API Error: {err_msg}"
-        else:
-            message_status = "Error: No Messenger PSID linked to this account."
-
-    dashboard_html = f"""
+    html_content = """
     <!DOCTYPE html>
-    <html>
-    <head><title>User Dashboard</title></head>
-    <body style="font-family: Arial; padding: 20px;">
-        <h2>Welcome to your Dashboard, {email}</h2>
-        <p>You are successfully logged in via your auto-login link.</p>
-        
-        <hr style="margin: 20px 0;">
-        
-        <h3>Send a Chat / Control Message</h3>
-        <form method="POST">
-            <textarea name="message" rows="4" cols="50" placeholder="Type your message or auto-chat command here..."></textarea><br><br>
-            <button type="submit" style="padding: 10px 20px;">Send Message</button>
-        </form>
-        
-        <p style="color: green; font-weight: bold;">{message_status}</p>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Professional Dashboard</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gray-50 font-sans antialiased">
+        <div class="min-h-screen flex flex-col">
+            <!-- Navigation -->
+            <nav class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm">
+                <h1 class="text-xl font-bold text-gray-800">Enterprise Portal</h1>
+                <span class="text-sm text-green-600 bg-green-50 px-3 py-1 rounded-full font-medium">● System Online</span>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="flex-grow max-w-5xl w-full mx-auto p-6 md:p-10">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+                    <p class="text-gray-600 mb-6">Manage your services, track deployments, and interact with live modules below.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-5">
+                            <h3 class="text-blue-900 font-semibold text-sm">Active Sessions</h3>
+                            <p class="text-2xl font-bold text-blue-600 mt-1">1,248</p>
+                        </div>
+                        <div class="bg-green-50 border border-green-100 rounded-xl p-5">
+                            <h3 class="text-green-900 font-semibold text-sm">Server Uptime</h3>
+                            <p class="text-2xl font-bold text-green-600 mt-1">99.98%</p>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-100 rounded-xl p-5">
+                            <h3 class="text-purple-900 font-semibold text-sm">Response Time</h3>
+                            <p class="text-2xl font-bold text-purple-600 mt-1">24ms</p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Control Panel -->
+                    <div class="border-t border-gray-100 pt-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Interactive Command Terminal</h3>
+                        <div class="space-y-4">
+                            <textarea rows="3" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter system instruction or script payload..."></textarea>
+                            <button onclick="alert('Command executed successfully!')" class="bg-blue-600 text-white font-medium px-5 py-2.5 rounded-lg text-sm hover:bg-blue-700 transition shadow-sm">Execute Action</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
     </body>
     </html>
     """
-    return render_template_string(dashboard_html)
+    return render_template_string(html_content)
 
 if __name__ == '__main__':
     app.run()
